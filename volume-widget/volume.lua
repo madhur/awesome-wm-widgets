@@ -149,9 +149,9 @@ local function rebuild_popup()
 
         for i = 0, #rows do rows[i]=nil end
 
-        table.insert(rows, build_header_row("SINKS"))
+        table.insert(rows, build_header_row("Outputs"))
         table.insert(rows, build_rows(sinks, function() rebuild_popup() end, "sink"))
-        table.insert(rows, build_header_row("SOURCES"))
+        table.insert(rows, build_header_row("Inputs"))
         table.insert(rows, build_rows(sources, function() rebuild_popup() end, "source"))
 
         popup:setup(rows)
@@ -205,7 +205,7 @@ local function worker(user_args)
 
     volume.widget:buttons(
             awful.util.table.join(
-                    awful.button({}, 3, function()
+                    awful.button({}, 1, function()
                         if popup.visible then
                             popup.visible = not popup.visible
                         else
@@ -216,7 +216,7 @@ local function worker(user_args)
                     awful.button({}, 4, function() volume:inc() end),
                     awful.button({}, 5, function() volume:dec() end),
                     awful.button({}, 2, function() volume:mixer() end),
-                    awful.button({}, 1, function() volume:toggle() end)
+                    awful.button({}, 3, function() volume:toggle() end)
             )
     )
 
