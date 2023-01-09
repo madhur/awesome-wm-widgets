@@ -10,7 +10,7 @@
 
 local watch = require("awful.widget.watch")
 local wibox = require("wibox")
-
+local helpers = require("madhur.helpers")
 local HOME_DIR = os.getenv("HOME")
 local WIDGET_DIR = HOME_DIR .. '/.config/awesome/awesome-wm-widgets/net-speed-widget/'
 local ICONS_DIR = WIDGET_DIR .. 'icons/'
@@ -37,7 +37,7 @@ local function convert_to_h(bytes)
         speed = tonumber(bits)
         dim = 'b/s'
     end
-    return math.floor(speed + 0.5) .. dim
+   return math.floor(speed + 0.5) .. dim
 end
 
 local function split(string_to_split, separator)
@@ -51,41 +51,56 @@ local function split(string_to_split, separator)
     return t
 end
 
+local function emit_signals(speed)
+    speed = speed*8 / 1000000
+    if speed > 1 and speed < 100 then
+        awesome.emit_signal("warning", "net_new")
+    elseif  speed >= 100 then
+        awesome.emit_signal("critical", "net_new")            
+    else
+        awesome.emit_signal("normal", "net_new")            
+    end
+end
+
 local function worker(user_args)
 
     local args = user_args or {}
 
-    local interface = args.interface or '*'
-    local timeout = args.timeout or 1
-    local width = args.width or 55
+    local interface = args.interface or 'enp5s0'
+    local timeout = args.timeout or 2
+    local width = args.width or 150
 
     net_speed_widget = wibox.widget {
         {
-            id = 'rx_speed',
-            forced_width = width,
-            align = 'right',
+            markup = " ",
             widget = wibox.widget.textbox
         },
         {
-            image = ICONS_DIR .. 'down.svg',
-            widget = wibox.widget.imagebox
+            id = 'rx_speed',
+            --forced_width = width,
+            align = 'right',
+            widget = wibox.widget.textbox
         },
-        {
-            image =  ICONS_DIR .. 'up.svg',
-            widget = wibox.widget.imagebox
-        },
+        -- {
+        --     image = ICONS_DIR .. 'down.svg',
+        --     widget = wibox.widget.imagebox
+        -- },
+        -- {
+        --     image =  ICONS_DIR .. 'up.svg',
+        --     widget = wibox.widget.imagebox
+        -- },
         {
             id = 'tx_speed',
-            forced_width = width,
+           -- forced_width = width,
             align = 'left',
             widget = wibox.widget.textbox
         },
         layout = wibox.layout.fixed.horizontal,
         set_rx_text = function(self, new_rx_speed)
-            self:get_children_by_id('rx_speed')[1]:set_text(tostring(new_rx_speed))
+            self:get_children_by_id('rx_speed')[1]:set_text(""..tostring(new_rx_speed).. " ↓ ")
         end,
         set_tx_text = function(self, new_tx_speed)
-            self:get_children_by_id('tx_speed')[1]:set_text(tostring(new_tx_speed))
+            self:get_children_by_id('tx_speed')[1]:set_text(""..tostring(new_tx_speed).. " ↑")
         end
     }
 
@@ -111,6 +126,13 @@ local function worker(user_args)
 
         widget:set_rx_text(convert_to_h(speed_rx))
         widget:set_tx_text(convert_to_h(speed_tx))
+        local speed
+        if (speed_rx > speed_tx) then
+            speed = speed_rx
+        else
+            speed = speed_tx
+        end
+        emit_signals(speed)
 
         prev_rx = cur_rx
         prev_tx = cur_tx
