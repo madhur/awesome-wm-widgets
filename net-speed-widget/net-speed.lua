@@ -12,10 +12,15 @@ local watch = require("awful.widget.watch")
 local wibox = require("wibox")
 local helpers = require("madhur.helpers")
 local HOME_DIR = os.getenv("HOME")
+local spawn  = require("awful.spawn")
 local WIDGET_DIR = HOME_DIR .. '/.config/awesome/awesome-wm-widgets/net-speed-widget/'
 local ICONS_DIR = WIDGET_DIR .. 'icons/'
+local awful = require("awful")
+local naughty = require("naughty")
 
 local net_speed_widget = {}
+local warn_count = 0
+local crit_count = 0
 
 local function convert_to_h(bytes)
     local speed
@@ -54,10 +59,18 @@ end
 local function emit_signals(speed)
     speed = speed*8 / 1000000
     if speed > 1 and speed < 100 then
-        awesome.emit_signal("warning", "net_new")
+        warn_count = warn_count + 1
+        if warn_count > 3 then
+            awesome.emit_signal("warning", "net_new")
+        end
     elseif  speed >= 100 then
-        awesome.emit_signal("critical", "net_new")            
+        crit_count = crit_count + 1
+        if crit_count > 3 then
+            awesome.emit_signal("critical", "net_new")            
+        end
     else
+        warn_count = 0
+        crit_count = 0
         awesome.emit_signal("normal", "net_new")            
     end
 end

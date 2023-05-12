@@ -201,14 +201,14 @@ local function worker(user_args)
 
     popup:buttons(
             awful.util.table.join(
-                    awful.button({}, next_month_button, function()
+                    awful.button({}, 4, function()
                         local a = cal:get_date()
                         a.month = a.month + 1
                         cal:set_date(nil)
                         cal:set_date(a)
                         popup:set_widget(cal)
                     end),
-                    awful.button({}, previous_month_button, function()
+                    awful.button({}, 5, function()
                         local a = cal:get_date()
                         a.month = a.month - 1
                         cal:set_date(nil)
